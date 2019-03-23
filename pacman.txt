@@ -1,0 +1,678 @@
+
+        
+        // Initialisation du niveau avec la fonction init()
+        Entier[][] pacman = init();
+        
+        
+        //position initiale de pacman : case [8,15]
+        Entier pacman_y = 15; //  
+        Entier pacman_x = 8; //  
+        
+        
+        // Position initiale du fantôme
+        Entier ghost1_x = 0;
+        Entier ghost1_y = 0;
+        
+        
+        // on récupère de boule présent avec la fonction getNbBoule
+        Entier nb_boule = getNbBoule(pacman);
+        
+        // Nb de vie 
+        Entier nbVie = 3;
+        
+        // Orientation par défaut du pacman
+        String orientation ="q";
+        
+        
+        // Classe qui implémente Runnable 
+        Fou foo = new Fou();
+        Thread inputThread = new Thread(foo);
+        inputThread.start();
+        
+        // String qui recueillir l'input de l'utilisateur concernant son orientation
+        String newStr;
+        
+        // Tableau qui servira à sauvegarder l'état d'une case quand le fantôme passera dessus pour la restituer après
+        Entier[] saveEtat = {1};
+        
+
+        // Tant que toutes les boules ne sont pas ramassées ou tant qu'on a encore des vies
+        Tant Que(nb_boule > 0 || nbVie > 0){
+            
+     
+            // on récupère dans newStr l'input que le thread lit
+            newStr = foo.getValue();
+         
+            // si il est null (encore rien lu) : alors newStr vaut l'orientation de pacman
+            Si (newStr == null){
+                newStr = orientation;
+            }
+            
+            //k variable de test 
+            Entier k=0;
+          
+            // On test si l'orientation mène à un mur sinon on garde la précédente 
+            
+            
+            
+            // si str n'est pas égale à orientation, ça veut dire d'un nouvel input a été lu, et on change d'orientation 
+            Si (newStr != (orientation)){ 
+                            
+                
+                // sert à empecher le changement d'orientation vers une case qui sera un mur, à la place, on continue la même orientation
+                Si(newStr == "s"){
+                    Si(murPresentS(pacman_x,pacman_y,pacman)==true){ // Si on tombe sur un mur, on incrémente k
+                        k++;
+                    }
+                } Sinon Si(newStr == "q"){
+                    Si(murPresentO(pacman_x,pacman_y,pacman)==true){
+                        k++;
+                    }
+                } Sinon Si(newStr == "d"){
+                    Si(murPresentE(pacman_x,pacman_y,pacman)==true){
+                        k++;
+                    }
+                } Sinon Si(newStr == "z"){
+                    Si(murPresentN(pacman_x,pacman_y,pacman)==true){
+                        k++;
+                    }
+                } 
+  
+                
+                Si(k==0){ // Si k n'a pas été incrémenté 
+                    orientation=newStr; // on change l'orientation si la case suivante à la nouvelle orientation est libre
+                }
+                             
+            }
+            
+            
+            /**** FANTOMES *****/
+            
+            
+            Entier m=0;           
+            
+            // On sauvegarde l'état de la case ou se trouve le fantome dans le tableau saveEtat
+            pacman[ghost1_y][ghost1_x]=saveEtat[0];
+            
+            // On bouge le fantome aléatoirement en s'assurant qu'il ne prenne pas une orientation vers un mur 
+            Tant Que(m<1){
+            
+                // variable test qui s'incrémente si la position tirée va vers un mur
+                Entier test=0;
+                
+                
+                Entier alea = rand(1,4);
+
+                Si (alea == 1){ // GAUCHE
+                    Si(murPresentO(ghost1_x,ghost1_y,pacman)==true){
+                        test++;
+                    }
+                } Sinon Si (alea == 2){ // BAS
+                    Si(murPresentS(ghost1_x,ghost1_y,pacman)==true){
+                        test++;
+                    }
+                } Sinon Si (alea == 3){ // DROITE
+                    Si(murPresentE(ghost1_x,ghost1_y,pacman)==true){
+                        test++;
+                    }
+                } Sinon Si (alea == 4){ // HAUT
+                    Si(murPresentN(ghost1_x,ghost1_y,pacman)==true){
+                        test++;
+                    }
+                } 
+          
+                Si(test==0){    // donc si l'orientation tirée aléatoirement est correcte                 
+                    
+                    Si (alea == 1){ // GAUCHE
+                        
+                        Si(pacman[ghost1_y][ghost1_x-1]==3){  // Si la case rencontrée à gauche est PacMan
+                            
+                            nbVie--;                           // on perd une vie
+                            pacman[pacman_y][pacman_x]=0;      // la case ou était pacman devient un 0
+                            pacman[ghost1_y][ghost1_x]=saveEtat[0]; // On restitue l'état à la case ou était pacman
+                            
+                            
+                            // On remet PacMan a sa position initiale
+                            pacman_y=15;
+                            pacman_x=8;    
+                            
+                            // On remet le fantôme a sa position initiale
+                            ghost1_x = 0;
+                            ghost1_y = 0;
+                            
+                        } Sinon {
+                        
+                            saveEtat[0] = pacman[ghost1_y][ghost1_x-1];  // Sinon on sauvegarde l'état de la prochaine position
+                            ghost1_x = ghost1_x-1;  // et le fantome bouge
+                            
+                        }
+    
+                        
+                    } Sinon Si (alea == 2){ // BAS
+                        
+                        Si(pacman[ghost1_y+1][ghost1_x]==3){
+                            nbVie--;
+                            
+                            // La position ou était pacman devient 0
+                            pacman[pacman_y][pacman_x]=0;
+
+                            // On restitue 
+                            pacman[ghost1_y][ghost1_x]=saveEtat[0];
+                            
+                            
+                            // On remet PacMan a sa position initiale
+                            pacman_y=15;
+                            pacman_x=8;    
+                            
+                            // On remet le fantôme a sa position initiale
+                            ghost1_x = 0;
+                            ghost1_y = 0;
+                            
+                        } Sinon {
+                        
+                            saveEtat[0] = pacman[ghost1_y+1][ghost1_x];
+                            ghost1_y = ghost1_y+1;
+                            
+                        }
+                        
+                  
+                        
+                    } Sinon Si (alea == 3){ // DROITE  
+                        
+                        Si(pacman[ghost1_y][ghost1_x+1]==3){
+                            nbVie--;
+                            
+                            
+                            pacman[pacman_y][pacman_x]=0;
+                            pacman[ghost1_y][ghost1_x]=saveEtat[0];
+                            
+                            // On remet PacMan a sa position initiale
+                            pacman_y=15;
+                            pacman_x=8;    
+                            
+                            // On remet le fantôme a sa position initiale
+                            ghost1_x = 0;
+                            ghost1_y = 0;
+                            
+                        } Sinon {
+                                               
+                            saveEtat[0] = pacman[ghost1_y][ghost1_x+1];
+                            ghost1_x = ghost1_x+1;
+                        
+                        }
+                        
+                   
+                    } Sinon Si (alea == 4){ // HAUT  
+                        
+                        // Si le fantôme rencontre Pacman   // tout le monde se met à son poEntier de départ et on perd une vie
+                        Si(pacman[ghost1_y-1][ghost1_x]==3){
+                            nbVie--;
+                            
+                            pacman[pacman_y][pacman_x]=0;
+                            pacman[ghost1_y][ghost1_x]=saveEtat[0];
+                            
+                            // On remet PacMan a sa position initiale
+                            pacman_y=15;
+                            pacman_x=8;    
+                            
+                            // On remet le fantôme a sa position initiale
+                            ghost1_x = 0;
+                            ghost1_y = 0;
+                            
+                        } Sinon {      //sinon on sauvegarde la prochaine pos du fantome et il avance                
+                        
+                            saveEtat[0] = pacman[ghost1_y-1][ghost1_x];
+                            ghost1_y = ghost1_y-1;
+                        
+                        }
+                        
+                        
+                    } 
+                     
+                    m++;
+                }// fin du test position correct
+                        
+            }// fin de l'instanciation du fantome 
+                   
+            
+            // le fantome a la valeur 4 sur le plateau
+            pacman[ghost1_y][ghost1_x]=4;
+            
+                
+            
+         /**********************/       
+                
+                
+                
+            Si(orientation == "s"){ // si l'orientation est en bas
+                
+                // Si il y a un mur en bas
+                Si(murPresentS(pacman_x,pacman_y,pacman)==true){                
+                    // On bouge pas
+                    pacman[pacman_y][pacman_x]=3;
+                }Sinon{
+                    // Si la prochaine pos est une boule
+                    Si(pacman[pacman_y+1][pacman_x]==1){
+                        // On décrémente le compteur
+                        nb_boule--;    
+                        
+                        // On incrémente pacman
+                        pacman_y=pacman_y+1;  
+                        // on met à jour la position de pacman
+                        pacman[pacman_y][pacman_x]=3;                       
+
+
+                        // Efface la précédente position de pacman
+                        Si(pacman[pacman_y-1][pacman_x]==3){                       
+                            pacman[pacman_y-1][pacman_x]=0;                      
+                        }
+                              
+                        // Si on touche un fantome
+                    } Sinon Si (pacman[pacman_y+1][pacman_x]==4){
+                        // On perd une vie
+                        nbVie--;
+                        
+                        // on remplace la position de pacman par un 0
+                        pacman[pacman_y][pacman_x]=0;
+
+                        // On remet PacMan à sa position de départ
+                        pacman_y=15;
+                        pacman_x=8;
+
+                        // On restitue l'état de la case sur laquelle se trouvait le fantome
+                        pacman[ghost1_y][ghost1_x]= saveEtat[0];
+
+                        // Le fantome revient à son point de départ
+                        ghost1_x = 0;
+                        ghost1_y = 0;
+                                               
+                        
+                        
+                    } Sinon {
+                        
+                        // On incrémente
+                        pacman_y=pacman_y+1;  
+                        // on met à jour le poEntiereur
+                        pacman[pacman_y][pacman_x]=3;                       
+
+
+                        // Pour remettre un 0 derrière PacMan
+                        Si(pacman[pacman_y-1][pacman_x]==3){                       
+                            pacman[pacman_y-1][pacman_x]=0;                      
+                        }
+                        
+                    }
+                     
+                           
+                }
+                
+                
+            } Sinon Si(orientation == "q"){// si l'orientation va à gauche
+                
+                // Si il y a un mur à gauche
+                Si(murPresentO(pacman_x,pacman_y,pacman)==true){
+                    // On bouge pas
+                    pacman[pacman_y][pacman_x]=3;
+                    
+                }Sinon{
+                    // Si la prochaine pos est une boule
+                    Si(pacman[pacman_y][pacman_x-1]==1){
+                        // On décrémente le compteur
+                        nb_boule--;
+                        // On incrémente pacman
+                        pacman_x=pacman_x-1;
+                        // on met à jour la position de pacman
+                        pacman[pacman_y][pacman_x]=3;                       
+
+                        // Efface la précédente position de pacman
+                        Si(pacman[pacman_y][pacman_x+1]==3){                       
+                            pacman[pacman_y][pacman_x+1]=0;                      
+                        }
+                        
+                        // Si on touche un fantome
+                    } Sinon Si (pacman[pacman_y][pacman_x+1]==4){
+                        // On perd une vie
+                        nbVie--;
+                        
+                        // on remplace la position de pacman par un 0
+                        pacman[pacman_y][pacman_x]=0;
+
+                        // On remet PacMan à sa position de départ
+                        pacman_y=15;
+                        pacman_x=8;
+
+                        // On restitue l'état de la case sur laquelle se trouvait le fantome
+                        pacman[ghost1_y][ghost1_x]= saveEtat[0];
+
+                        // Le fantome revient à son point de départ
+                        ghost1_x = 0;
+                        ghost1_y = 0;
+                        
+                    } Sinon {
+                        
+                        // On incrémente
+                        pacman_x=pacman_x-1;  
+                        // on met à jour le poEntiereur
+                        pacman[pacman_y][pacman_x]=3;                       
+
+
+                        // Pour remettre un 0 derrière PacMan
+                        Si(pacman[pacman_y][pacman_x+1]==3){                       
+                            pacman[pacman_y][pacman_x+1]=0;                      
+                        }
+                        
+                    }
+                    
+                            
+                      
+                  
+                }
+                
+                
+            } Sinon Si(orientation == "z"){// si l'orientation est en haut
+                
+                // Si il y a un mur en haut
+                Si(murPresentN(pacman_x,pacman_y,pacman)==true){
+                    // On bouge pas                   
+                    pacman[pacman_y][pacman_x]=3;
+                    
+                }Sinon{
+                    // Si la prochaine pos est une boule
+                    Si(pacman[pacman_y-1][pacman_x]==1){
+                        // On décrémente le compteur
+                        nb_boule--;
+                        
+                        // On incrémente pacman
+                        pacman_y=pacman_y-1;
+                    
+                        // on met à jour la position de pacman
+                        pacman[pacman_y][pacman_x]=3;                       
+
+                        // Efface la précédente position de pacman
+                        Si(pacman[pacman_y+1][pacman_x]==3){                       
+                            pacman[pacman_y+1][pacman_x]=0;                      
+                        }
+                        
+                    // Si on touche un fantome  
+                    } Sinon Si (pacman[pacman_y-1][pacman_x]==4){
+                        // On perd une vie
+                        nbVie--;
+                        
+                        // on remplace la position de pacman par un 0
+                        pacman[pacman_y][pacman_x]=0;
+
+                        // On remet PacMan à sa position de départ
+                        pacman_y=15;
+                        pacman_x=8;
+
+                        // On restitue l'état de la case sur laquelle se trouvait le fantome
+                        pacman[ghost1_y][ghost1_x]= saveEtat[0];
+
+                        // Le fantome revient à son point de départ
+                        ghost1_x = 0;
+                        ghost1_y = 0;
+                        
+                    } Sinon {
+                        
+                        // On incrémente
+                        pacman_y=pacman_y-1;  
+                        // on met à jour le pointeur
+                        pacman[pacman_y][pacman_x]=3;                       
+
+
+                        // Pour remettre un 0 derrière PacMan
+                        Si(pacman[pacman_y+1][pacman_x]==3){                       
+                            pacman[pacman_y+1][pacman_x]=0;                      
+                        }
+                        
+                    }
+                    
+                    
+                }
+                
+                
+            } Sinon Si(orientation == "d"){// si l'orientation est ) droite
+                
+                // Si il y a un mur à droite
+                Si(murPresentE(pacman_x,pacman_y,pacman)==true){               
+                    // On bouge pas
+                    pacman[pacman_y][pacman_x]=3;
+                    
+                }Sinon{
+                    // Si la prochaine pos est une boule
+                    Si(pacman[pacman_y][pacman_x+1]==1){
+                        // On décrémente le compteur
+                        nb_boule--;
+                        
+                        // On incrémente pacman
+                        pacman_x=pacman_x+1;   
+                        
+                        // on met à jour la position de pacman
+                        pacman[pacman_y][pacman_x]=3;                       
+
+                        // Efface la précédente position de pacman
+                        Si(pacman[pacman_y][pacman_x-1]==3){                       
+                            pacman[pacman_y][pacman_x-1]=0;                      
+                        }
+                        
+                        // Si on touche un fantome
+                    } Sinon Si (pacman[pacman_y][pacman_x+1]==4){
+                        // On perd une vie
+                        nbVie--;
+                        
+                        // on remplace la position de pacman par un 0
+                        pacman[pacman_y][pacman_x]=0;
+
+                        // On remet PacMan à sa position de départ
+                        pacman_y=15;
+                        pacman_x=8;
+
+                        // On restitue l'état de la case sur laquelle se trouvait le fantome
+                        pacman[ghost1_y][ghost1_x]= saveEtat[0];
+
+                        // Le fantome revient à son point de départ
+                        ghost1_x = 0;
+                        ghost1_y = 0;
+                        
+                    } Sinon {
+                        
+                        // On incrémente
+                        pacman_x=pacman_x+1;  
+                        // on met à jour le pointeur
+                        pacman[pacman_y][pacman_x]=3;                       
+
+
+                        // Pour remettre un 0 derrière PacMan
+                        Si(pacman[pacman_y][pacman_x-1]==3){                       
+                            pacman[pacman_y][pacman_x-1]=0;                      
+                        }
+                        
+                    }
+                    
+                    
+                    
+                }
+                
+                
+            } Sinon {
+                //Afficher("Commande inconnue");
+                
+            }
+            
+                show(pacman);
+                Afficher(nb_boule);
+                      
+     
+        }// fin du while
+        
+        
+        
+    
+
+
+
+
+    
+    Fonction getNbBoule(Entier[][] grille){
+        
+        Entier n=0;
+        
+        Pour(Entier i =0; i <20; i++){
+            Pour(Entier j =0;j<17;j++){
+                Si(grille[i][j] == 1){ // Si on trouve une boule (1) on incrémente 
+                    n++;
+                }
+            }
+        }
+        
+        retourne n;
+        
+    }
+
+
+    Fonction posInit(Entier pacman_x, Entier pacman_y, Entier ghost1_x, Entier ghost1_y, Entier[][] pacman, Entier[] saveEtat){
+        
+        // on remplace la position de pacman par un 0
+        pacman[pacman_y][pacman_x]=0;
+
+        // On remet PacMan à sa position de départ
+        pacman_y=15;
+        pacman_x=8;
+
+        // On restitue l'état de la case sur laquelle se trouvait le fantome
+        pacman[ghost1_y][ghost1_x]= saveEtat[0];
+
+        // Le fantome revient à son point de départ
+        ghost1_x = 0;
+        ghost1_y = 0;
+        
+    }
+
+    
+    
+    Fonction init(){
+        
+        Entier[][] res={{1,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1},
+                        {1,2,2,1,2,2,2,1,2,1,2,2,2,1,2,2,1},
+                        {1,2,2,1,2,2,2,1,2,1,2,2,2,1,2,2,1},
+                        {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+                        {1,2,2,1,2,1,2,2,2,2,2,1,2,1,2,2,1},
+                        {1,1,1,1,2,1,1,1,2,1,1,1,2,1,1,1,1},
+                        {2,2,2,1,2,2,2,0,2,0,2,2,2,1,2,2,2},
+                        {2,2,2,1,2,0,0,0,0,0,0,0,2,1,2,2,2},
+                        {2,2,2,1,2,0,2,2,2,2,2,0,2,1,2,2,2},
+                        {0,0,0,1,0,0,2,2,2,2,2,0,0,1,0,0,0},
+                        {2,2,2,1,2,0,2,2,2,2,2,0,2,1,2,2,2},
+                        {2,2,2,1,2,0,0,0,0,0,0,0,2,1,2,2,2},
+                        {2,2,2,1,2,0,2,2,2,2,2,0,2,1,2,2,2},
+                        {1,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1},
+                        {1,2,2,1,2,2,2,1,2,1,2,2,2,1,2,2,1},
+                        {1,1,2,1,1,1,1,1,1,1,1,1,1,1,2,1,1},
+                        {2,1,2,1,2,1,2,2,2,2,2,1,2,1,2,1,2},
+                        {1,1,1,1,2,1,1,1,2,1,1,1,2,1,1,1,1},
+                        {1,2,2,2,2,2,2,1,2,1,2,2,2,2,2,2,1},
+                        {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}
+        };
+                         
+        
+        retourne res;
+        
+        
+    }
+          
+    
+
+        
+    Fonction show(Entier[][] grille){
+             
+        
+        
+        Pour(Entier i=0;i<20;i++){
+            Pour(Entier j=0;j<17;j++){
+                
+                Afficher(grille[i][j]+" ");
+       
+            }
+            Afficher();
+        }
+        
+        Afficher();
+        Afficher();
+        Afficher("---------------------");
+    }
+    
+    
+    
+      
+ //Permet de savoir si le mur Est est present     // retourne true si il y a un mur 
+Fonction murPresentE(Entier x, Entier y, Entier [][] pacman){
+    
+    Entier max =16;
+    
+    // test si on dépasse la limite du niveau
+    Si(x+1 > max){ 
+        retourne true;
+    // test si il y a un mur à droite
+    } Sinon Si(pacman[y][x+1] == 2 ){
+        retourne true;
+    } Sinon {   
+        retourne false ;
+    }
+    
+    
+    
+}
+
+//Permet de savoir si le mur Nord est present            
+Fonction murPresentN(Entier x, Entier y, Entier [][] pacman){
+    
+    Entier min=0;
+    
+    Si(y-1 <min){
+        retourne true;
+    } Sinon Si(pacman[y-1][x] == 2 ){
+        retourne true;
+    } Sinon {   
+        retourne false ;
+    }
+    
+}
+
+//Permet de savoir si le mur Ouest est present        
+Fonction murPresentO(Entier x, Entier y, Entier [][] pacman){
+    
+    Entier min=0;
+    
+    Si(x-1 < min){
+        retourne true;
+    } Sinon Si(pacman[y][x-1] == 2){
+        retourne true;
+    } Sinon {   
+        retourne false ;
+    }
+}
+
+
+//Permet de savoir si le mur Sud est present         
+Fonction murPresentS(Entier x, Entier y, Entier [][] pacman){
+    
+    Entier max =19;
+    
+    Si(y+1 > max){
+        retourne true;
+    }Sinon Si(pacman[y+1][x] == 2 ){
+        retourne true;
+    } Sinon {   
+        retourne false ;
+    }
+}
+   
+Fonction Entier rand(Entier min ,Entier max){
+        
+    Entier res = Rand(min,max);
+        
+    retourne res;
+    
+}
+    
+    

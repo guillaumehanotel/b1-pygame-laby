@@ -1,0 +1,397 @@
+  
+
+Entier taille = 20;
+Entier min = taille-taille;
+Entier max = taille-1;
+
+
+
+Entier grille[taille][taille];
+
+
+//position initiale du serpent : case [1,1]
+Entier snake_y = 1;
+Entier snake_x = 1;
+
+//taille du serpent
+Entier taille_snake = 1;
+
+//On admet que le serpent gagne 2 en taille quand il grandi
+
+
+// Position de la pomme : ne doit pas être égale à la pos du serpent
+Entier apple_x = Rand(min,max);
+Entier apple_y = Rand(min,max);
+
+
+// Sauvegarde dans des tableaux les coordonnées X et Y sur lesquelles le serpent passe
+Entier traj_x[200];
+Entier traj_y[200];
+
+
+
+//Initialisation de la grille
+Pour(Entier i=0;i<taille;i++){
+    Pour(Entier j=0;j<taille;j++){
+
+        //placement du serpent
+        Si(i==snake_y && j==snake_x){
+            grille[i][j]=1;
+        }
+
+        //placement de la pomme
+        Sinon (i==apple_x && j==apple_y){
+            grille[i][j]=2;
+        }
+
+        //sinon 0 partout
+        Sinon {
+            grille[i][j]=0;
+
+        }
+
+    }
+}
+
+
+
+
+// Orientation   
+// d = droite
+// q = gauche
+// z = haut
+// s = bas
+String orientation="s";
+
+// Booléen qui met fin à la boucle
+boolean perdu = false;
+
+
+//String qui servira de réceptacle à l'input 
+String newStr; 
+
+Entier k=0;
+
+show(grille,taille);
+
+
+Tant que(perdu!=true){
+
+
+    // taille du tableau comprenant taille du serpent + 2 futur coordonnees
+    // Ex : taille_snake = 3, donc p = 4
+
+    Entier p=taille_snake+1;  
+
+
+
+    // Sauvegarde dans les p premières cases du tableau les coordonnées sur lesquelles on passe
+    // Ex : p = 4 , on a donc dans les index 0 1 2, les coordonnées du serpent, et dans les index 3 et 4 les 2 coordonnées avant le serpent 
+
+
+    // On décale les précédentes positions
+    Tant que(p>0){
+        traj_x[p]=traj_x[p-1]; 
+        traj_y[p]=traj_y[p-1];
+        p--;
+    }
+
+    // On ajoute à l'index 0, la position du serpent 
+    traj_y[0]=snake_x;
+    traj_x[0]=snake_y;
+
+
+    //variable k pour éviter que ça boucle si une direction inverse est entré en ayant taille >1
+    Si(k>0){
+        newStr=orientation;
+    } Sinon {
+        newStr = Lire();// on récupère dans newStr l'input 
+    }
+    k=0;
+
+
+
+    // si il est null (encore rien lu) : alors newStr vaut l'orientation du serpent
+    Si (newStr == null){
+        newStr = orientation;
+    }
+
+
+    // Si newStr est égale à l'orientation courante, alors on avance dans la bonne direction 
+
+    // Sinon on remplace par la nouvelle direction
+    Si (newStr != orientation){
+        orientation=newStr;
+    }
+
+    // si l'orientation est égale à d droite
+    Si(orientation == "d"){ 
+
+        // test si on dépasse la grille
+        Si(snake_x+1 > max){ 
+            perdu = true;
+        } Sinon {
+
+            //test si la case à droite est une pomme
+            Si(grille[snake_y][snake_x+1]==2){ 
+
+                //serpent va à droite
+                snake_x = snake_x+1;
+
+                // nouvelle pomme
+                apple_x = Rand(min,max);
+                apple_y = Rand(min,max);
+
+                //taille augmente
+                taille_snake = taille_snake+2;
+
+                //update
+                grille = update(snake_y,snake_x,apple_x,apple_y,taille_snake,grille,taille, traj_x, traj_y);
+
+
+            // test si la case à droite est le serpent(perdu)
+            } Sinon Si (grille[snake_y][snake_x+1]==1){ 
+
+                snake_x = snake_x+1;//serpent va à droite
+                perdu= true;
+
+                grille = update(snake_y,snake_x,apple_x,apple_y,taille_snake,grille,taille, traj_x, traj_y);
+
+            // si rien de spécial
+            } Sinon { 
+
+                snake_x = snake_x+1;
+
+                grille = update(snake_y,snake_x,apple_x,apple_y,taille_snake,grille,taille, traj_x, traj_y);
+
+            }
+
+        }
+
+    // si l'orientation est égale à q gauche
+    } Sinon Si (orientation == "q"){ 
+
+
+        // test si on dépasse la grille
+        Si(snake_x-1 < min){ 
+            perdu = true;
+        } Sinon {
+
+            //test si la case à gauche est une pomme
+            Si(grille[snake_y][snake_x-1]==2){ 
+
+                snake_x = snake_x-1;//serpent va à gauche
+
+
+                // nouvelle pomme
+                apple_x = Rand(min,max);
+                apple_y = Rand(min,max);
+
+                //taille augmente
+                taille_snake = taille_snake+2;
+
+                //update
+                grille = update(snake_y,snake_x,apple_x,apple_y,taille_snake,grille,taille, traj_x, traj_y);
+
+            // test si la case à gauche est le serpent(perdu)
+            } Sinon Si (grille[snake_y][snake_x-1]==1){ 
+
+                snake_x = snake_x-1;//serpent va à gauche
+                perdu= true;
+
+                grille = update(snake_y,snake_x,apple_x,apple_y,taille_snake,grille,taille, traj_x, traj_y);
+
+            // si rien de spécial
+            } Sinon { 
+                snake_x = snake_x-1;
+
+                grille = update(snake_y,snake_x,apple_x,apple_y,taille_snake,grille,taille, traj_x, traj_y);
+
+            }
+
+        }
+
+    // si l'orientation est égale à s bas
+    } Sinon Si (orientation == "s"){ 
+
+        // test si on dépasse la grille
+        Si(snake_y+1 > max){ 
+            perdu = true;
+
+        }Sinon {
+
+            //test si la case en bas est une pomme
+            Si(grille[snake_y+1][snake_x]==2){ 
+
+                snake_y = snake_y+1;//serpent va en bas
+
+
+                // nouvelle pomme
+                apple_x = Rand();
+                apple_y = Rand();
+
+                //taille augmente
+                taille_snake = taille_snake+2;
+
+                //update
+                grille = update(snake_y,snake_x,apple_x,apple_y,taille_snake,grille,taille, traj_x, traj_y);
+
+
+            // test si la case en bas est le serpent(perdu)
+            } Sinon Si (grille[snake_y+1][snake_x]==1){ 
+
+                //serpent va en bas
+                snake_y = snake_y+1;
+                perdu= true;
+
+                grille = update(snake_y,snake_x,apple_x,apple_y,taille_snake,grille,taille, traj_x, traj_y);
+
+            // si rien de spécial
+            } Sinon { 
+                snake_y = snake_y+1;
+
+                grille = update(snake_y,snake_x,apple_x,apple_y,taille_snake,grille,taille, traj_x, traj_y);
+
+            }
+
+        }
+
+
+    } Sinon Si (orientation == "z"){// si l'orientation est égale à z haut
+
+
+
+        Si(snake_y-1 < min){ // test si on dépasse la grille
+            perdu = true;
+
+        } Sinon {
+
+            //test si la case en haut est une pomme
+            Si(grille[snake_y-1][snake_x]==2){ 
+
+
+                //serpent va en haut
+                snake_y = snake_y-1;
+
+
+                // nouvelle pomme
+                apple_x = Rand(min,max);
+                apple_y = Rand(min,max);
+
+                //taille augmente
+                taille_snake = taille_snake+2;
+
+                //update
+                grille = update(snake_y,snake_x,apple_x,apple_y,taille_snake,grille,taille, traj_x, traj_y);
+
+
+            // test si la case en haut est le serpent(perdu)
+            } Sinon Si (grille[snake_y-1][snake_x]==1){ 
+
+                snake_y = snake_y-1;//serpent va en haut
+                perdu= true;
+
+                grille = update(snake_y,snake_x,apple_x,apple_y,taille_snake,grille,taille, traj_x, traj_y);
+
+            // si rien de spécial
+            } Sinon { 
+                snake_y = snake_y-1;
+
+                grille = update(snake_y,snake_x,apple_x,apple_y,taille_snake,grille,taille, traj_x, traj_y);   
+
+            }
+
+        }
+
+    //si orientation = autre chose que zqsd
+    } Sinon { 
+        Afficher("Commande inconnue");
+    }
+
+
+
+    show(grille,taille);
+    
+
+}// fin du while
+
+
+Si (perdu== true){
+    Afficher("Perdu");
+}
+
+
+
+
+
+
+
+
+
+
+// prend en paramètre : pos snake / pos pomme / taille snake / grille / orientation courante / nb coordonnées enregistrées / nb orientation
+
+Fonction Entier[][] update(Entier snake_x, Entier snake_y, Entier apple_x, Entier apple_y, Entier taille_snake, Entier[][] grille, Entier taille, Entier[] traj_x, Entier[] traj_y){
+
+    Entier[][] res = grille;     
+
+    Pour(Entier i=0;i<taille;i++){
+        Pour(Entier j=0;j<taille;j++){
+
+            //placement du serpent 
+            // parcours des tableaux des x et y 
+
+            Entier f=0;
+            Entier g=0;
+
+            // affiche seulement la partie correspondant à la taille du snake parmi toutes les coordonnées enregistrées
+            Tant que(g<taille_snake){ 
+
+                Si(i==traj_x[g] && j==traj_y[g]){ 
+                    res[i][j]=1;
+                    f++;
+                }
+                g++;
+            }
+
+            // Si f = 0 -> ça veut dire que la coordonnée testée dans les doubles boucles for n'est pas présente dans les coordonnées enregistrées du serpent
+
+            Si(f==0){                   
+                //placement de la pomme
+                Si(i==apple_x && j==apple_y){
+                    res[i][j]=2;
+                }               
+                //sinon 0 partout
+                Sinon {
+                    res[i][j]=0;                  
+                }                    
+            }
+
+        }      
+    }   
+
+
+    retourne res;  
+
+}
+
+
+
+Fonction show(Entier[][] grille, Entier taille){
+
+
+    Pour(Entier i=0;i<taille;i++){
+        Pour(Entier j=0;j<taille;j++){
+
+            Afficher(grille[i][j]+" ");
+
+        }
+        Afficher();
+    }
+
+    Afficher();
+    Afficher();
+    Afficher("---------------------");
+}
+
+
